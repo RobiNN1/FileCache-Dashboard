@@ -25,7 +25,7 @@ And install it
 composer require robinn/filecache-dashboard
 ```
 
-In phpCacheAdmin's `config.php` file add class to the `dashboards` add `filecache` config
+In phpCacheAdmin's `config.php` file add class to the `dashboards` and add `filecache` config
 
 ```php
 'dashboards' => [

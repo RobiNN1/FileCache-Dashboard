@@ -14,7 +14,17 @@ namespace RobiNN\FileCache;
 
 use JsonException;
 
+/**
+ * This is a modified FileStorage class.
+ *
+ * @link https://github.com/RobiNN1/Cache/blob/master/src/Storages/FileStorage.php
+ */
 class FileCache {
+    /**
+     * @const string FileCache version.
+     */
+    public const VERSION = '2.4.0';
+
     private string $path;
 
     public function __construct(string $path) {

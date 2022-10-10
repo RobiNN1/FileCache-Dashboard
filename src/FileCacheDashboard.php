@@ -22,6 +22,11 @@ use RobiNN\Pca\Template;
 class FileCacheDashboard implements DashboardInterface {
     use FileCacheTrait;
 
+    /**
+     * @const string FileCache dashbord version.
+     */
+    public const VERSION = '1.0.0';
+
     private Template $template;
 
     private int $current_project = 0;
@@ -145,9 +150,10 @@ class FileCacheDashboard implements DashboardInterface {
         }
 
         return $this->template->render('partials/info', [
-            'panels_toggler' => false,
-            'title'          => 'FileCache',
-            'info'           => $this->info(),
+            'panels_toggler'    => false,
+            'title'             => 'FileCache',
+            'extension_version' => FileCache::VERSION,
+            'info'              => $this->info(),
         ]);
     }
 
