@@ -1,0 +1,52 @@
+{
+  "name": "robinn/filecache-dashboard",
+  "description": "phpCacheAdmin Dashboard for File cache from robinn/cache.",
+  "license": "MIT",
+  "type": "project",
+  "keywords": [
+    "file",
+    "cache",
+    "admin",
+    "dashboard",
+    "gui",
+    "phpcacheadmin"
+  ],
+  "authors": [
+    {
+      "name": "Róbert Kelčák",
+      "email": "robo@kelcak.com",
+      "homepage": "https://kelcak.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.4",
+    "ext-json": "*"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^1.8",
+    "phpunit/phpunit": "^9.5",
+    "robinn/phpcacheadmin": "dev-master"
+  },
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/RobiNN1/phpCacheAdmin.git"
+    }
+  ],
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "autoload": {
+    "psr-4": {
+      "RobiNN\\FileCache\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "phpstan": "phpstan --ansi",
+    "test": "phpunit --colors=always"
+  }
+}
