@@ -25,7 +25,7 @@ class FileCacheDashboard implements DashboardInterface {
     /**
      * @const string FileCache dashbord version.
      */
-    public const VERSION = '1.0.0';
+    public const VERSION = '1.0.1';
 
     private Template $template;
 
@@ -35,7 +35,7 @@ class FileCacheDashboard implements DashboardInterface {
         $this->template = $template;
         $this->template->addPath('filecache', __DIR__.'/../templates');
 
-        if (is_array(Config::get('filecache'))) {
+        if (is_array(Config::get('filecache'))) { // fix for tests
             $project = Http::get('server', 'int');
             $this->current_project = array_key_exists($project, Config::get('filecache')) ? $project : 0;
         }
@@ -47,7 +47,7 @@ class FileCacheDashboard implements DashboardInterface {
      * @return bool
      */
     public static function check(): bool {
-        return true;
+        return class_exists(FileCache::class);
     }
 
     /**
@@ -150,7 +150,6 @@ class FileCacheDashboard implements DashboardInterface {
         }
 
         return $this->template->render('partials/info', [
-            'panels_toggler'    => false,
             'title'             => 'FileCache',
             'extension_version' => FileCache::VERSION,
             'info'              => $this->info(),
