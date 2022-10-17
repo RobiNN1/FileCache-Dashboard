@@ -76,7 +76,7 @@ class FileCacheDashboard implements DashboardInterface {
         $filecache = new FileCache($project['path']);
 
         if (!$filecache->isConnected()) {
-            throw new DashboardException(sprintf('Directory "%s" is not writable.', $project['path']));
+            throw new DashboardException(sprintf('Directory "%s" does not exists.', $project['path']));
         }
 
         return $filecache;
