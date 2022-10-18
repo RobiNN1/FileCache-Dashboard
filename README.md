@@ -8,19 +8,6 @@
 
 ## Installation
 
-Add repository to the `composer.json`
-
-```json
-"repositories": [
-  {
-    "type": "git",
-    "url": "https://github.com/RobiNN1/FileCache-Dashboard.git"
-  }
-],
-```
-
-And install it
-
 ```
 composer require robinn/filecache-dashboard
 ```
