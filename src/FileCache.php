@@ -69,7 +69,7 @@ class FileCache {
      *
      * @return void
      */
-    public function set(string $key, $data, int $seconds = 0): void {
+    public function set(string $key, mixed $data, int $seconds = 0): void {
         $file = $this->getFileName($key);
 
         try {
@@ -99,7 +99,7 @@ class FileCache {
             $data = json_decode((string) file_get_contents($this->getFileName($key)), true, 512, JSON_THROW_ON_ERROR);
 
             return $data['expire'] === 0 ? -1 : (($data['time'] + $data['expire']) - time());
-        } catch (JsonException $e) {
+        } catch (JsonException) {
             return 0;
         }
     }
@@ -111,7 +111,7 @@ class FileCache {
      *
      * @return mixed
      */
-    public function get(string $key) {
+    public function get(string $key): mixed {
         $file = $this->getFileName($key);
 
         if (is_file($file)) {

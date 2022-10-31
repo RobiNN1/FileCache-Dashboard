@@ -1,6 +1,7 @@
 # FileCache-Dashboard
 
-[phpCacheAdmin](https://github.com/RobiNN1/phpCacheAdmin) Dashboard for FileCache from [`robinn/cache`](https://github.com/RobiNN1/Cache).
+FileCache dashboard (from [`robinn/cache`](https://github.com/RobiNN1/Cache))
+for [phpCacheAdmin](https://github.com/RobiNN1/phpCacheAdmin).
 
 ![Visitor Badge](https://visitor-badge.laobi.icu/badge?page_id=RobiNN1.FileCache-Dashboard)
 
@@ -12,7 +13,7 @@
 composer require robinn/filecache-dashboard
 ```
 
-In phpCacheAdmin's `config.php` file add class to the `dashboards` and add `filecache` config
+In phpCacheAdmin's `config.php` add class to the `dashboards` list and add `filecache` config
 
 ```php
 'dashboards' => [
@@ -32,7 +33,7 @@ the project or have access to folders outside of website root.
 
 ## Requirements
 
-- PHP >= 7.4
+- PHP >= 8.1
 - phpCacheAdmin >= 1.3.1
 
 ## Testing

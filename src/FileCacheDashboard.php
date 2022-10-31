@@ -121,7 +121,7 @@ class FileCacheDashboard implements DashboardInterface {
         foreach (Config::get('filecache') as $id => $project) {
             try {
                 $files = count($this->getAllKeys($this->connect($project)));
-            } catch (DashboardException $e) {
+            } catch (DashboardException) {
                 $files = 'An error occurred while retrieving files.';
             }
 
