@@ -1,6 +1,6 @@
 # FileCache-Dashboard
 
-FileCache dashboard (from [`robinn/cache`](https://github.com/RobiNN1/Cache))
+FileCache ([`robinn/cache`](https://github.com/RobiNN1/Cache)) dashboard
 for [phpCacheAdmin](https://github.com/RobiNN1/phpCacheAdmin).
 
 ![Visitor Badge](https://visitor-badge.laobi.icu/badge?page_id=RobiNN1.FileCache-Dashboard)
