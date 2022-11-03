@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace RobiNN\FileCache;
 
+use RobiNN\Cache\Cache;
+use RobiNN\Cache\CacheException;
+use RobiNN\Cache\Storages\FileStorage;
 use RobiNN\Pca\Config;
 use RobiNN\Pca\Dashboards\DashboardException;
 use RobiNN\Pca\Dashboards\DashboardInterface;
@@ -25,7 +28,7 @@ class FileCacheDashboard implements DashboardInterface {
     /**
      * @const string FileCache dashbord version.
      */
-    public const VERSION = '1.0.1';
+    public const VERSION = '1.0.2';
 
     private Template $template;
 
@@ -47,7 +50,7 @@ class FileCacheDashboard implements DashboardInterface {
      * @return bool
      */
     public static function check(): bool {
-        return class_exists(FileCache::class);
+        return class_exists(Cache::class);
     }
 
     /**
@@ -69,11 +72,11 @@ class FileCacheDashboard implements DashboardInterface {
      *
      * @param array<string, int|string> $project
      *
-     * @return FileCache
-     * @throws DashboardException
+     * @return FileStorage
+     * @throws DashboardException|CacheException
      */
-    private function connect(array $project): FileCache {
-        $filecache = new FileCache($project['path']);
+    private function connect(array $project): FileStorage {
+        $filecache = new FileStorage($project, true);
 
         if (!$filecache->isConnected()) {
             throw new DashboardException(sprintf('Directory "%s" does not exists.', $project['path']));
@@ -103,7 +106,7 @@ class FileCacheDashboard implements DashboardInterface {
             if (isset($_GET['delete'])) {
                 $return = $this->deleteKey($filecache);
             }
-        } catch (DashboardException $e) {
+        } catch (DashboardException|CacheException $e) {
             $return = $e->getMessage();
         }
 
@@ -120,8 +123,8 @@ class FileCacheDashboard implements DashboardInterface {
 
         foreach (Config::get('filecache') as $id => $project) {
             try {
-                $files = count($this->getAllKeys($this->connect($project)));
-            } catch (DashboardException) {
+                $files = count($this->connect($project)->keys());
+            } catch (DashboardException|CacheException) {
                 $files = 'An error occurred while retrieving files.';
             }
 
@@ -151,7 +154,7 @@ class FileCacheDashboard implements DashboardInterface {
 
         return $this->template->render('partials/info', [
             'title'             => 'FileCache',
-            'extension_version' => FileCache::VERSION,
+            'extension_version' => Cache::VERSION,
             'info'              => $this->info(),
         ]);
     }
@@ -171,7 +174,7 @@ class FileCacheDashboard implements DashboardInterface {
             } else {
                 $return = $this->mainDashboard($filecache);
             }
-        } catch (DashboardException $e) {
+        } catch (DashboardException|CacheException $e) {
             return $e->getMessage();
         }
 

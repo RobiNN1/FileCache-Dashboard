@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace RobiNN\FileCache;
 
+use RobiNN\Cache\Storages\FileStorage;
 use RobiNN\Pca\Format;
 use RobiNN\Pca\Http;
 use RobiNN\Pca\Paginator;
@@ -21,11 +22,11 @@ trait FileCacheTrait {
     /**
      * Delete key.
      *
-     * @param FileCache $filecache
+     * @param FileStorage $filecache
      *
      * @return string
      */
-    private function deleteKey(FileCache $filecache): string {
+    private function deleteKey(FileStorage $filecache): string {
         $keys = explode(',', Http::get('delete'));
 
         if (count($keys) === 1 && $filecache->delete($keys[0])) {
@@ -45,41 +46,31 @@ trait FileCacheTrait {
     /**
      * Get all keys with data.
      *
-     * @param FileCache $filecache
+     * @param FileStorage $filecache
      *
      * @return array<int, array<string, string|int>>
      */
-    private function getAllKeys(FileCache $filecache): array {
-        $keys = [];
+    private function getAllKeys(FileStorage $filecache): array {
+        static $keys = [];
 
-        $handle = opendir($filecache->getPath());
-
-        if ($handle) {
-            while (false !== ($file = readdir($handle))) {
-                if ($file !== '.' && $file !== '..') {
-                    $key = str_replace('.cache', '', $file);
-
-                    $keys[] = [
-                        'key' => $key,
-                        'ttl' => $filecache->ttl($key) === 0 ? -1 : $filecache->ttl($key),
-                    ];
-                }
-            }
-
-            closedir($handle);
+        foreach ($filecache->keys() as $key) {
+            $keys[] = [
+                'key' => $key,
+                'ttl' => $filecache->ttl($key) === 0 ? -1 : $filecache->ttl($key),
+            ];
         }
 
-        return array_values($keys);
+        return $keys;
     }
 
     /**
      * Main dashboard content.
      *
-     * @param FileCache $filecache
+     * @param FileStorage $filecache
      *
      * @return string
      */
-    private function mainDashboard(FileCache $filecache): string {
+    private function mainDashboard(FileStorage $filecache): string {
         $keys = $this->getAllKeys($filecache);
 
         $paginator = new Paginator($this->template, $keys);
@@ -94,16 +85,34 @@ trait FileCacheTrait {
     }
 
     /**
-     * View key value.
+     * Get key and convert any value to a string.
      *
-     * @param FileCache $filecache
+     * @param FileStorage $filecache
+     * @param string      $key
      *
      * @return string
      */
-    private function viewKey(FileCache $filecache): string {
+    private function getKey(FileStorage $filecache, string $key): string {
+        $data = $filecache->get($key);
+
+        if (is_array($data) || is_object($data)) {
+            $data = serialize($data);
+        }
+
+        return (string) $data;
+    }
+
+    /**
+     * View key value.
+     *
+     * @param FileStorage $filecache
+     *
+     * @return string
+     */
+    private function viewKey(FileStorage $filecache): string {
         $key = Http::get('key');
 
-        if (!is_file($filecache->getPath().'/'.$key.'.cache')) {
+        if (!$filecache->exists($key)) {
             Http::redirect();
         }
 
@@ -112,7 +121,7 @@ trait FileCacheTrait {
             Http::redirect();
         }
 
-        $value = $filecache->getKey($key);
+        $value = $this->getKey($filecache, $key);
 
         [$value, $encode_fn, $is_formatted] = Value::format($value);
 

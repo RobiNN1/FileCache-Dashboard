@@ -15,7 +15,7 @@ namespace Tests;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
 use ReflectionMethod;
-use RobiNN\FileCache\FileCache;
+use RobiNN\Cache\Storages\FileStorage;
 use RobiNN\FileCache\FileCacheDashboard;
 use RobiNN\Pca\Template;
 use RuntimeException;
@@ -25,7 +25,7 @@ final class FileCacheTest extends TestCase {
 
     private FileCacheDashboard $dashboard;
 
-    private FileCache $filecache;
+    private FileStorage $filecache;
 
     private string $path;
 
@@ -36,10 +36,10 @@ final class FileCacheTest extends TestCase {
      * @param string $name
      * @param mixed  ...$args
      *
-     * @return mixed|string
+     * @return mixed
      * @throws ReflectionException
      */
-    protected static function callMethod(object $object, string $name, ...$args) {
+    protected static function callMethod(object $object, string $name, ...$args): mixed {
         $method = new ReflectionMethod($object, $name);
         $method->setAccessible(true);
 
@@ -102,6 +102,9 @@ final class FileCacheTest extends TestCase {
         $this->assertFalse($this->filecache->exists($key3));
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function testSetGetKey(): void {
         $keys = [
             'string' => ['original' => 'phpCacheAdmin', 'expected' => 'phpCacheAdmin'],
@@ -123,13 +126,13 @@ final class FileCacheTest extends TestCase {
             $this->filecache->set('pu-test-'.$key, $value['original']);
         }
 
-        $this->assertSame($keys['string']['expected'], $this->filecache->getKey('pu-test-string'));
-        $this->assertSame($keys['int']['expected'], $this->filecache->getKey('pu-test-int'));
-        $this->assertSame($keys['float']['expected'], $this->filecache->getKey('pu-test-float'));
-        $this->assertSame($keys['bool']['expected'], $this->filecache->getKey('pu-test-bool'));
-        $this->assertSame($keys['null']['expected'], $this->filecache->getKey('pu-test-null'));
-        $this->assertSame($keys['array']['expected'], $this->filecache->getKey('pu-test-array'));
-        $this->assertSame($keys['object']['expected'], $this->filecache->getKey('pu-test-object'));
+        $this->assertSame($keys['string']['expected'], self::callMethod($this->dashboard, 'getKey', $this->filecache, 'pu-test-string'));
+        $this->assertSame($keys['int']['expected'], self::callMethod($this->dashboard, 'getKey', $this->filecache, 'pu-test-int'));
+        $this->assertSame($keys['float']['expected'], self::callMethod($this->dashboard, 'getKey', $this->filecache, 'pu-test-float'));
+        $this->assertSame($keys['bool']['expected'], self::callMethod($this->dashboard, 'getKey', $this->filecache, 'pu-test-bool'));
+        $this->assertSame($keys['null']['expected'], self::callMethod($this->dashboard, 'getKey', $this->filecache, 'pu-test-null'));
+        $this->assertSame($keys['array']['expected'], self::callMethod($this->dashboard, 'getKey', $this->filecache, 'pu-test-array'));
+        $this->assertSame($keys['object']['expected'], self::callMethod($this->dashboard, 'getKey', $this->filecache, 'pu-test-object'));
 
         foreach ($keys as $key => $value) {
             $this->filecache->delete('pu-test-'.$key);

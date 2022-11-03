@@ -34,7 +34,7 @@ the project or have access to folders outside of website root.
 ## Requirements
 
 - PHP >= 8.1
-- phpCacheAdmin >= 1.3.1
+- phpCacheAdmin >= 1.3.2
 
 ## Testing
 
