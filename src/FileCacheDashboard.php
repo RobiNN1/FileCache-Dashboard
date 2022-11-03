@@ -62,7 +62,6 @@ class FileCacheDashboard implements DashboardInterface {
         return [
             'key'   => 'file',
             'title' => 'FileCache',
-            'color' => 'slate',
             'icon'  => Helpers::svg(__DIR__.'/../assets/filecache.svg'),
         ];
     }
