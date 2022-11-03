@@ -1,6 +1,6 @@
 {
   "name": "robinn/filecache-dashboard",
-  "description": "FileCache dashboard (from robinn/cache) for phpCacheAdmin.",
+  "description": "FileCache (robinn/cache) dashboard for phpCacheAdmin.",
   "license": "MIT",
   "type": "project",
   "keywords": [
@@ -24,7 +24,7 @@
     "robinn/cache": "^2.4"
   },
   "require-dev": {
-    "phpstan/phpstan": "^1.8",
+    "phpstan/phpstan": "^1.9",
     "phpunit/phpunit": "^9.5",
     "robinn/phpcacheadmin": "dev-master"
   },
