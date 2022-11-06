@@ -54,9 +54,14 @@ trait FileCacheTrait {
         static $keys = [];
 
         foreach ($filecache->keys() as $key) {
+            $ttl = $filecache->ttl($key);
+
             $keys[] = [
-                'key' => $key,
-                'ttl' => $filecache->ttl($key) === 0 ? -1 : $filecache->ttl($key),
+                'key'   => $key,
+                'items' => [
+                    'title' => ['title' => $key, 'link' => true,],
+                    'ttl'   => $ttl === 0 ? 'Doesn\'t expire' : $ttl,
+                ],
             ];
         }
 
