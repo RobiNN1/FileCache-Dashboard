@@ -74,7 +74,7 @@ class FileCacheDashboard implements DashboardInterface {
      * @return FileStorage
      * @throws DashboardException|CacheException
      */
-    private function connect(array $project): FileStorage {
+    public function connect(array $project): FileStorage {
         $filecache = new FileStorage($project, true);
 
         if (!$filecache->isConnected()) {

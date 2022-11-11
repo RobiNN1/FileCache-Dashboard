@@ -16,8 +16,10 @@ use JsonException;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
 use ReflectionMethod;
+use RobiNN\Cache\CacheException;
 use RobiNN\Cache\Storages\FileStorage;
 use RobiNN\FileCache\FileCacheDashboard;
+use RobiNN\Pca\Dashboards\DashboardException;
 use RobiNN\Pca\Template;
 use RuntimeException;
 
@@ -48,7 +50,7 @@ final class FileCacheTest extends TestCase {
     }
 
     /**
-     * @throws RuntimeException|ReflectionException
+     * @throws RuntimeException|DashboardException|CacheException
      */
     protected function setUp(): void {
         $this->template = new Template();
@@ -60,7 +62,7 @@ final class FileCacheTest extends TestCase {
             throw new RuntimeException(sprintf('Unable to create the "%s" directory.', $this->path));
         }
 
-        $this->filecache = self::callMethod($this->dashboard, 'connect', ['path' => $this->path]);
+        $this->filecache = $this->dashboard->connect(['path' => $this->path]);
     }
 
     /**

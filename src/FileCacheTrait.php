@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace RobiNN\FileCache;
 
-use JsonException;
 use RobiNN\Cache\Storages\FileStorage;
 use RobiNN\Pca\Format;
+use RobiNN\Pca\Helpers;
 use RobiNN\Pca\Http;
 use RobiNN\Pca\Paginator;
 use RobiNN\Pca\Value;
@@ -28,24 +28,9 @@ trait FileCacheTrait {
      * @return string
      */
     private function deleteKey(FileStorage $filecache): string {
-        try {
-            $keys = json_decode(Http::post('delete'), false, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException) {
-            $keys = [];
-        }
-
-        if (is_array($keys) && count($keys)) {
-            foreach ($keys as $key) {
-                $filecache->delete($key);
-            }
-            $message = 'Keys has been deleted.';
-        } elseif (is_string($keys) && $filecache->delete($keys)) {
-            $message = sprintf('Key "%s" has been deleted.', $keys);
-        } else {
-            $message = 'No keys are selected.';
-        }
-
-        return $this->template->render('components/alert', ['message' => $message]);
+        return Helpers::deleteKey($this->template, static function (string $key) use ($filecache): bool {
+            return $filecache->delete($key);
+        });
     }
 
     /**
@@ -64,7 +49,10 @@ trait FileCacheTrait {
             $keys[] = [
                 'key'   => $key,
                 'items' => [
-                    'title' => ['title' => $key, 'link' => true,],
+                    'title' => [
+                        'title' => $key,
+                        'link'  => Http::queryString([], ['view' => 'key', 'key' => $key]),
+                    ],
                     'ttl'   => $ttl === 0 ? 'Doesn\'t expire' : $ttl,
                 ],
             ];
@@ -89,7 +77,6 @@ trait FileCacheTrait {
             'keys'        => $paginator->getPaginated(),
             'all_keys'    => count($keys),
             'new_key_url' => Http::queryString([], ['form' => 'new']),
-            'view_url'    => Http::queryString([], ['view' => 'key', 'key' => '']),
             'paginator'   => $paginator->render(),
         ]);
     }
