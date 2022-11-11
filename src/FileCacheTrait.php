@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace RobiNN\FileCache;
 
+use JsonException;
 use RobiNN\Cache\Storages\FileStorage;
 use RobiNN\Pca\Format;
 use RobiNN\Pca\Http;
@@ -27,15 +28,19 @@ trait FileCacheTrait {
      * @return string
      */
     private function deleteKey(FileStorage $filecache): string {
-        $keys = explode(',', Http::get('delete'));
+        try {
+            $keys = json_decode(Http::post('delete'), false, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            $keys = [];
+        }
 
-        if (count($keys) === 1 && $filecache->delete($keys[0])) {
-            $message = sprintf('Key "%s" has been deleted.', $keys[0]);
-        } elseif (count($keys) > 1) {
+        if (is_array($keys) && count($keys)) {
             foreach ($keys as $key) {
                 $filecache->delete($key);
             }
             $message = 'Keys has been deleted.';
+        } elseif (is_string($keys) && $filecache->delete($keys)) {
+            $message = sprintf('Key "%s" has been deleted.', $keys);
         } else {
             $message = 'No keys are selected.';
         }

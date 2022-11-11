@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use JsonException;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
 use ReflectionMethod;
@@ -63,14 +64,14 @@ final class FileCacheTest extends TestCase {
     }
 
     /**
-     * @throws ReflectionException
+     * @throws ReflectionException|JsonException
      */
     public function testDeleteKey(): void {
         $key = 'pu-test-delete-key';
 
         $this->filecache->set($key, 'data');
 
-        $_GET['delete'] = $key;
+        $_POST['delete'] = json_encode($key, JSON_THROW_ON_ERROR);
 
         $this->assertSame(
             $this->template->render('components/alert', ['message' => 'Key "'.$key.'" has been deleted.']),
@@ -80,7 +81,7 @@ final class FileCacheTest extends TestCase {
     }
 
     /**
-     * @throws ReflectionException
+     * @throws ReflectionException|JsonException
      */
     public function testDeleteKeys(): void {
         $key1 = 'pu-test-delete-key1';
@@ -91,7 +92,7 @@ final class FileCacheTest extends TestCase {
         $this->filecache->set($key2, 'data2');
         $this->filecache->set($key3, 'data3');
 
-        $_GET['delete'] = implode(',', [$key1, $key2, $key3]);
+        $_POST['delete'] = json_encode([$key1, $key2, $key3], JSON_THROW_ON_ERROR);
 
         $this->assertSame(
             $this->template->render('components/alert', ['message' => 'Keys has been deleted.']),
