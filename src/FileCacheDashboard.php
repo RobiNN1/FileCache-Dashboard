@@ -75,7 +75,7 @@ class FileCacheDashboard implements DashboardInterface {
      * @throws DashboardException|CacheException
      */
     public function connect(array $project): FileStorage {
-        $filecache = new FileStorage($project, true);
+        $filecache = new FileStorage($project);
 
         if (!$filecache->isConnected()) {
             throw new DashboardException(sprintf('Directory "%s" does not exists.', $project['path']));
