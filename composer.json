@@ -20,7 +20,6 @@
   ],
   "require": {
     "php": ">=8.1",
-    "ext-json": "*",
     "robinn/cache": "^2.4"
   },
   "require-dev": {

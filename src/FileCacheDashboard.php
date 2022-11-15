@@ -28,7 +28,7 @@ class FileCacheDashboard implements DashboardInterface {
     /**
      * @const string FileCache dashbord version.
      */
-    final public const VERSION = '1.0.2';
+    final public const VERSION = '1.1.0';
 
     private int $current_project = 0;
 
@@ -48,8 +48,6 @@ class FileCacheDashboard implements DashboardInterface {
     }
 
     /**
-     * Get dashboard info.
-     *
      * @return array<string, string>
      */
     public function getDashboardInfo(): array {
@@ -100,12 +98,11 @@ class FileCacheDashboard implements DashboardInterface {
         return $return;
     }
 
-    /**
-     * Data for info panels.
-     *
-     * @return array<string, mixed>
-     */
-    public function info(): array {
+    public function infoPanels(): string {
+        if (isset($_GET['moreinfo']) || isset($_GET['form']) || isset($_GET['view'], $_GET['key'])) {
+            return '';
+        }
+
         $info = [];
 
         foreach (Config::get('filecache') as $id => $project) {
@@ -126,18 +123,10 @@ class FileCacheDashboard implements DashboardInterface {
             ];
         }
 
-        return $info;
-    }
-
-    public function showPanels(): string {
-        if (isset($_GET['moreinfo']) || isset($_GET['form']) || isset($_GET['view'], $_GET['key'])) {
-            return '';
-        }
-
         return $this->template->render('partials/info', [
             'title'             => 'FileCache',
             'extension_version' => Cache::VERSION,
-            'info'              => $this->info(),
+            'info'              => $info,
         ]);
     }
 

@@ -24,6 +24,35 @@ trait FileCacheTrait {
         return Helpers::deleteKey($this->template, static fn (string $key): bool => $filecache->delete($key));
     }
 
+    private function viewKey(FileStorage $filecache): string {
+        $key = Http::get('key');
+
+        if (!$filecache->exists($key)) {
+            Http::redirect();
+        }
+
+        if (isset($_GET['delete'])) {
+            $filecache->delete($key);
+            Http::redirect();
+        }
+
+        $value = Helpers::mixedToString($filecache->get($key));
+
+        [$value, $encode_fn, $is_formatted] = Value::format($value);
+
+        $ttl = $filecache->ttl($key) === 0 ? -1 : $filecache->ttl($key);
+
+        return $this->template->render('partials/view_key', [
+            'key'        => $key,
+            'value'      => $value,
+            'ttl'        => Format::seconds($ttl),
+            'size'       => Format::bytes(strlen((string) $value)),
+            'encode_fn'  => $encode_fn,
+            'formatted'  => $is_formatted,
+            'delete_url' => Http::queryString(['view'], ['delete' => 'key', 'key' => $key]),
+        ]);
+    }
+
     /**
      * Get all keys with data.
      *
@@ -60,48 +89,6 @@ trait FileCacheTrait {
             'all_keys'    => count($keys),
             'new_key_url' => Http::queryString([], ['form' => 'new']),
             'paginator'   => $paginator->render(),
-        ]);
-    }
-
-    /**
-     * Get key and convert any value to a string.
-     */
-    private function getKey(FileStorage $filecache, string $key): string {
-        $data = $filecache->get($key);
-
-        if (is_array($data) || is_object($data)) {
-            $data = serialize($data);
-        }
-
-        return (string) $data;
-    }
-
-    private function viewKey(FileStorage $filecache): string {
-        $key = Http::get('key');
-
-        if (!$filecache->exists($key)) {
-            Http::redirect();
-        }
-
-        if (isset($_GET['delete'])) {
-            $filecache->delete($key);
-            Http::redirect();
-        }
-
-        $value = $this->getKey($filecache, $key);
-
-        [$value, $encode_fn, $is_formatted] = Value::format($value);
-
-        $ttl = $filecache->ttl($key) === 0 ? -1 : $filecache->ttl($key);
-
-        return $this->template->render('partials/view_key', [
-            'key'        => $key,
-            'value'      => $value,
-            'ttl'        => Format::seconds($ttl),
-            'size'       => Format::bytes(strlen((string) $value)),
-            'encode_fn'  => $encode_fn,
-            'formatted'  => $is_formatted,
-            'delete_url' => Http::queryString(['view'], ['delete' => 'key', 'key' => $key]),
         ]);
     }
 }
