@@ -28,14 +28,13 @@ class FileCacheDashboard implements DashboardInterface {
     /**
      * @const string FileCache dashbord version.
      */
-    public const VERSION = '1.0.2';
-
-    private Template $template;
+    final public const VERSION = '1.0.2';
 
     private int $current_project = 0;
 
-    public function __construct(Template $template) {
-        $this->template = $template;
+    public function __construct(
+        private readonly Template $template
+    ) {
         $this->template->addPath('filecache', __DIR__.'/../templates');
 
         if (is_array(Config::get('filecache'))) { // fix for tests
@@ -44,11 +43,6 @@ class FileCacheDashboard implements DashboardInterface {
         }
     }
 
-    /**
-     * Check if an extension is installed.
-     *
-     * @return bool
-     */
     public static function check(): bool {
         return class_exists(Cache::class);
     }
@@ -71,7 +65,6 @@ class FileCacheDashboard implements DashboardInterface {
      *
      * @param array<string, int|string> $project
      *
-     * @return FileStorage
      * @throws DashboardException|CacheException
      */
     public function connect(array $project): FileStorage {
@@ -84,11 +77,6 @@ class FileCacheDashboard implements DashboardInterface {
         return $filecache;
     }
 
-    /**
-     * Ajax content.
-     *
-     * @return string
-     */
     public function ajax(): string {
         $return = '';
         $projects = Config::get('filecache');
@@ -141,11 +129,6 @@ class FileCacheDashboard implements DashboardInterface {
         return $info;
     }
 
-    /**
-     * Show info panels.
-     *
-     * @return string
-     */
     public function showPanels(): string {
         if (isset($_GET['moreinfo']) || isset($_GET['form']) || isset($_GET['view'], $_GET['key'])) {
             return '';
@@ -158,11 +141,6 @@ class FileCacheDashboard implements DashboardInterface {
         ]);
     }
 
-    /**
-     * Dashboard content.
-     *
-     * @return string
-     */
     public function dashboard(): string {
         $projects = Config::get('filecache');
 

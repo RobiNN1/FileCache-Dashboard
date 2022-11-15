@@ -20,23 +20,12 @@ use RobiNN\Pca\Paginator;
 use RobiNN\Pca\Value;
 
 trait FileCacheTrait {
-    /**
-     * Delete key.
-     *
-     * @param FileStorage $filecache
-     *
-     * @return string
-     */
     private function deleteKey(FileStorage $filecache): string {
-        return Helpers::deleteKey($this->template, static function (string $key) use ($filecache): bool {
-            return $filecache->delete($key);
-        });
+        return Helpers::deleteKey($this->template, static fn (string $key): bool => $filecache->delete($key));
     }
 
     /**
      * Get all keys with data.
-     *
-     * @param FileStorage $filecache
      *
      * @return array<int, array<string, string|int>>
      */
@@ -61,13 +50,6 @@ trait FileCacheTrait {
         return $keys;
     }
 
-    /**
-     * Main dashboard content.
-     *
-     * @param FileStorage $filecache
-     *
-     * @return string
-     */
     private function mainDashboard(FileStorage $filecache): string {
         $keys = $this->getAllKeys($filecache);
 
@@ -83,11 +65,6 @@ trait FileCacheTrait {
 
     /**
      * Get key and convert any value to a string.
-     *
-     * @param FileStorage $filecache
-     * @param string      $key
-     *
-     * @return string
      */
     private function getKey(FileStorage $filecache, string $key): string {
         $data = $filecache->get($key);
@@ -99,13 +76,6 @@ trait FileCacheTrait {
         return (string) $data;
     }
 
-    /**
-     * View key value.
-     *
-     * @param FileStorage $filecache
-     *
-     * @return string
-     */
     private function viewKey(FileStorage $filecache): string {
         $key = Http::get('key');
 
@@ -128,7 +98,7 @@ trait FileCacheTrait {
             'key'        => $key,
             'value'      => $value,
             'ttl'        => Format::seconds($ttl),
-            'size'       => Format::bytes(strlen($value)),
+            'size'       => Format::bytes(strlen((string) $value)),
             'encode_fn'  => $encode_fn,
             'formatted'  => $is_formatted,
             'delete_url' => Http::queryString(['view'], ['delete' => 'key', 'key' => $key]),
