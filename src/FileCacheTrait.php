@@ -54,8 +54,6 @@ trait FileCacheTrait {
     }
 
     /**
-     * Get all keys with data.
-     *
      * @return array<int, array<string, string|int>>
      */
     private function getAllKeys(FileStorage $filecache): array {

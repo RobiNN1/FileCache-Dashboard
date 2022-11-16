@@ -18,7 +18,6 @@ use RobiNN\Cache\Storages\FileStorage;
 use RobiNN\Pca\Config;
 use RobiNN\Pca\Dashboards\DashboardException;
 use RobiNN\Pca\Dashboards\DashboardInterface;
-use RobiNN\Pca\Helpers;
 use RobiNN\Pca\Http;
 use RobiNN\Pca\Template;
 
@@ -30,17 +29,20 @@ class FileCacheDashboard implements DashboardInterface {
      */
     final public const VERSION = '1.1.0';
 
-    private int $current_project = 0;
+    /**
+     * @var array<int, array<string, int|string>>
+     */
+    private array $projects;
 
-    public function __construct(
-        private readonly Template $template
-    ) {
+    private int $current_project;
+
+    public function __construct(private readonly Template $template) {
         $this->template->addPath('filecache', __DIR__.'/../templates');
 
-        if (is_array(Config::get('filecache'))) { // fix for tests
-            $project = Http::get('server', 'int');
-            $this->current_project = array_key_exists($project, Config::get('filecache')) ? $project : 0;
-        }
+        $this->projects = Config::get('filecache', []);
+
+        $project = Http::get('server', 'int');
+        $this->current_project = array_key_exists($project, $this->projects) ? $project : 0;
     }
 
     public static function check(): bool {
@@ -50,11 +52,11 @@ class FileCacheDashboard implements DashboardInterface {
     /**
      * @return array<string, string>
      */
-    public function getDashboardInfo(): array {
+    public function dashboardInfo(): array {
         return [
             'key'   => 'file',
             'title' => 'FileCache',
-            'icon'  => Helpers::svg(__DIR__.'/../assets/filecache.svg'),
+            'icon'  => __DIR__.'/../assets/filecache.svg',
         ];
     }
 
@@ -77,7 +79,7 @@ class FileCacheDashboard implements DashboardInterface {
 
     public function ajax(): string {
         $return = '';
-        $projects = Config::get('filecache');
+        $projects = $this->projects;
 
         try {
             $filecache = $this->connect($projects[$this->current_project]);
@@ -98,21 +100,20 @@ class FileCacheDashboard implements DashboardInterface {
         return $return;
     }
 
-    public function infoPanels(): string {
-        if (isset($_GET['moreinfo']) || isset($_GET['form']) || isset($_GET['view'], $_GET['key'])) {
-            return '';
-        }
+    /**
+     * @return array<int, mixed>
+     */
+    private function panels(): array {
+        $panels = [];
 
-        $info = [];
-
-        foreach (Config::get('filecache') as $id => $project) {
+        foreach ($this->projects as $id => $project) {
             try {
                 $files = count($this->connect($project)->keys());
             } catch (DashboardException|CacheException) {
                 $files = 'An error occurred while retrieving files.';
             }
 
-            $info['panels'][] = [
+            $panels[] = [
                 'title'            => $project['name'] ?? 'Project '.$id,
                 'server_selection' => true,
                 'current_server'   => $this->current_project,
@@ -123,18 +124,29 @@ class FileCacheDashboard implements DashboardInterface {
             ];
         }
 
+        return $panels;
+    }
+
+    public function infoPanels(): string {
+        // Hide panels on view-key page.
+        if (isset($_GET['view'], $_GET['key'])) {
+            return '';
+        }
+
         return $this->template->render('partials/info', [
             'title'             => 'FileCache',
             'extension_version' => Cache::VERSION,
-            'info'              => $info,
+            'info'              => ['panels' => $this->panels()],
         ]);
     }
 
     public function dashboard(): string {
-        $projects = Config::get('filecache');
+        if (count($this->projects) === 0) {
+            return 'No projects';
+        }
 
         try {
-            $filecache = $this->connect($projects[$this->current_project]);
+            $filecache = $this->connect($this->projects[$this->current_project]);
             if (isset($_GET['view'], $_GET['key'])) {
                 $return = $this->viewKey($filecache);
             } else {
