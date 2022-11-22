@@ -18,6 +18,7 @@ use RobiNN\Cache\Storages\FileStorage;
 use RobiNN\Pca\Config;
 use RobiNN\Pca\Dashboards\DashboardException;
 use RobiNN\Pca\Dashboards\DashboardInterface;
+use RobiNN\Pca\Helpers;
 use RobiNN\Pca\Http;
 use RobiNN\Pca\Template;
 
@@ -91,40 +92,13 @@ class FileCacheDashboard implements DashboardInterface {
             }
 
             if (isset($_GET['delete'])) {
-                $return = $this->deleteKey($filecache);
+                $return = Helpers::deleteKey($this->template, static fn (string $key): bool => $filecache->delete($key));
             }
         } catch (DashboardException|CacheException $e) {
             $return = $e->getMessage();
         }
 
         return $return;
-    }
-
-    /**
-     * @return array<int, mixed>
-     */
-    private function panels(): array {
-        $panels = [];
-
-        foreach ($this->projects as $id => $project) {
-            try {
-                $files = count($this->connect($project)->keys());
-            } catch (DashboardException|CacheException) {
-                $files = 'An error occurred while retrieving files.';
-            }
-
-            $panels[] = [
-                'title'            => $project['name'] ?? 'Project '.$id,
-                'server_selection' => true,
-                'current_server'   => $this->current_project,
-                'data'             => [
-                    'Path'  => realpath($project['path']),
-                    'Files' => $files,
-                ],
-            ];
-        }
-
-        return $panels;
     }
 
     public function infoPanels(): string {

@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace RobiNN\FileCache;
 
+use RobiNN\Cache\CacheException;
 use RobiNN\Cache\Storages\FileStorage;
+use RobiNN\Pca\Dashboards\DashboardException;
 use RobiNN\Pca\Format;
 use RobiNN\Pca\Helpers;
 use RobiNN\Pca\Http;
@@ -20,8 +22,31 @@ use RobiNN\Pca\Paginator;
 use RobiNN\Pca\Value;
 
 trait FileCacheTrait {
-    private function deleteKey(FileStorage $filecache): string {
-        return Helpers::deleteKey($this->template, static fn (string $key): bool => $filecache->delete($key));
+    /**
+     * @return array<int, mixed>
+     */
+    private function panels(): array {
+        $panels = [];
+
+        foreach ($this->projects as $id => $project) {
+            try {
+                $files = count($this->connect($project)->keys());
+            } catch (DashboardException|CacheException) {
+                $files = 'An error occurred while retrieving files.';
+            }
+
+            $panels[] = [
+                'title'            => $project['name'] ?? 'Project '.$id,
+                'server_selection' => true,
+                'current_server'   => $this->current_project,
+                'data'             => [
+                    'Path'  => realpath($project['path']),
+                    'Files' => $files,
+                ],
+            ];
+        }
+
+        return $panels;
     }
 
     private function viewKey(FileStorage $filecache): string {

@@ -27,8 +27,6 @@ use RuntimeException;
 final class FileCacheTest extends TestCase {
     private Template $template;
 
-    private FileCacheDashboard $dashboard;
-
     private FileStorage $filecache;
 
     private string $path;
@@ -55,7 +53,7 @@ final class FileCacheTest extends TestCase {
      */
     protected function setUp(): void {
         $this->template = new Template();
-        $this->dashboard = new FileCacheDashboard($this->template);
+        $dashboard = new FileCacheDashboard($this->template);
 
         $this->path = __DIR__.'/file_cache';
 
@@ -63,11 +61,11 @@ final class FileCacheTest extends TestCase {
             throw new RuntimeException(sprintf('Unable to create the "%s" directory.', $this->path));
         }
 
-        $this->filecache = $this->dashboard->connect(['path' => $this->path]);
+        $this->filecache = $dashboard->connect(['path' => $this->path]);
     }
 
     /**
-     * @throws ReflectionException|JsonException
+     * @throws JsonException
      */
     public function testDeleteKey(): void {
         $key = 'pu-test-delete-key';
@@ -78,13 +76,13 @@ final class FileCacheTest extends TestCase {
 
         $this->assertSame(
             $this->template->render('components/alert', ['message' => 'Key "'.$key.'" has been deleted.']),
-            self::callMethod($this->dashboard, 'deleteKey', $this->filecache)
+            Helpers::deleteKey($this->template, fn (string $key): bool => $this->filecache->delete($key))
         );
         $this->assertFalse($this->filecache->exists($key));
     }
 
     /**
-     * @throws ReflectionException|JsonException
+     * @throws JsonException
      */
     public function testDeleteKeys(): void {
         $key1 = 'pu-test-delete-key1';
@@ -99,7 +97,7 @@ final class FileCacheTest extends TestCase {
 
         $this->assertSame(
             $this->template->render('components/alert', ['message' => 'Keys has been deleted.']),
-            self::callMethod($this->dashboard, 'deleteKey', $this->filecache)
+            Helpers::deleteKey($this->template, fn (string $key): bool => $this->filecache->delete($key))
         );
         $this->assertFalse($this->filecache->exists($key1));
         $this->assertFalse($this->filecache->exists($key2));
