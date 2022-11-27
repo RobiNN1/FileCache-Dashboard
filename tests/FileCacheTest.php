@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of phpCacheAdmin.
+ * This file is part of FileCache-Dashboard.
  *
  * Copyright (c) Róbert Kelčák (https://kelcak.com/)
  *
