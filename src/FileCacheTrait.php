@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace RobiNN\FileCache;
 
 use RobiNN\Cache\CacheException;
-use RobiNN\Cache\Storages\FileStorage;
 use RobiNN\Pca\Dashboards\DashboardException;
 use RobiNN\Pca\Format;
 use RobiNN\Pca\Helpers;
@@ -49,23 +48,23 @@ trait FileCacheTrait {
         return $panels;
     }
 
-    private function viewKey(FileStorage $filecache): string {
+    private function viewKey(): string {
         $key = Http::get('key');
 
-        if (!$filecache->exists($key)) {
+        if (!$this->filecache->exists($key)) {
             Http::redirect();
         }
 
         if (isset($_GET['delete'])) {
-            $filecache->delete($key);
+            $this->filecache->delete($key);
             Http::redirect();
         }
 
-        $value = Helpers::mixedToString($filecache->get($key));
+        $value = Helpers::mixedToString($this->filecache->get($key));
 
         [$value, $encode_fn, $is_formatted] = Value::format($value);
 
-        $ttl = $filecache->ttl($key) === 0 ? -1 : $filecache->ttl($key);
+        $ttl = $this->filecache->ttl($key) === 0 ? -1 : $this->filecache->ttl($key);
 
         return $this->template->render('partials/view_key', [
             'key'        => $key,
@@ -81,11 +80,11 @@ trait FileCacheTrait {
     /**
      * @return array<int, array<string, string|int>>
      */
-    private function getAllKeys(FileStorage $filecache): array {
+    private function getAllKeys(): array {
         static $keys = [];
 
-        foreach ($filecache->keys() as $key) {
-            $ttl = $filecache->ttl($key);
+        foreach ($this->filecache->keys() as $key) {
+            $ttl = $this->filecache->ttl($key);
 
             $keys[] = [
                 'key'   => $key,
@@ -102,8 +101,8 @@ trait FileCacheTrait {
         return $keys;
     }
 
-    private function mainDashboard(FileStorage $filecache): string {
-        $keys = $this->getAllKeys($filecache);
+    private function mainDashboard(): string {
+        $keys = $this->getAllKeys();
 
         $paginator = new Paginator($this->template, $keys);
 

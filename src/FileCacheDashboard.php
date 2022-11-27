@@ -37,6 +37,8 @@ class FileCacheDashboard implements DashboardInterface {
 
     private int $current_project;
 
+    private FileStorage $filecache;
+
     public function __construct(private readonly Template $template) {
         $this->template->addPath('filecache', __DIR__.'/../templates');
 
@@ -83,16 +85,16 @@ class FileCacheDashboard implements DashboardInterface {
         $projects = $this->projects;
 
         try {
-            $filecache = $this->connect($projects[$this->current_project]);
+            $this->filecache = $this->connect($projects[$this->current_project]);
 
-            if (isset($_GET['deleteall']) && $filecache->flush()) {
+            if (isset($_GET['deleteall']) && $this->filecache->flush()) {
                 $return = $this->template->render('components/alert', [
                     'message' => 'Cache has been cleaned.',
                 ]);
             }
 
             if (isset($_GET['delete'])) {
-                $return = Helpers::deleteKey($this->template, static fn (string $key): bool => $filecache->delete($key));
+                $return = Helpers::deleteKey($this->template, fn (string $key): bool => $this->filecache->delete($key));
             }
         } catch (DashboardException|CacheException $e) {
             $return = $e->getMessage();
@@ -120,11 +122,12 @@ class FileCacheDashboard implements DashboardInterface {
         }
 
         try {
-            $filecache = $this->connect($this->projects[$this->current_project]);
+            $this->filecache = $this->connect($this->projects[$this->current_project]);
+
             if (isset($_GET['view'], $_GET['key'])) {
-                $return = $this->viewKey($filecache);
+                $return = $this->viewKey();
             } else {
-                $return = $this->mainDashboard($filecache);
+                $return = $this->mainDashboard();
             }
         } catch (DashboardException|CacheException $e) {
             return $e->getMessage();
