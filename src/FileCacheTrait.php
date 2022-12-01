@@ -39,7 +39,7 @@ trait FileCacheTrait {
                 'server_selection' => true,
                 'current_server'   => $this->current_project,
                 'data'             => [
-                    'Path'  => realpath($project['path']),
+                    'Path'  => is_dir((string) $project['path']) ? realpath((string) $project['path']) : $project['path'],
                     'Files' => $files,
                 ],
             ];
@@ -49,7 +49,7 @@ trait FileCacheTrait {
     }
 
     private function viewKey(): string {
-        $key = Http::get('key');
+        $key = Http::get('key', '');
 
         if (!$this->filecache->exists($key)) {
             Http::redirect();

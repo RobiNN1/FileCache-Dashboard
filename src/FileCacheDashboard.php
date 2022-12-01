@@ -25,9 +25,6 @@ use RobiNN\Pca\Template;
 class FileCacheDashboard implements DashboardInterface {
     use FileCacheTrait;
 
-    /**
-     * @const string FileCache dashbord version.
-     */
     final public const VERSION = '1.1.0';
 
     /**
@@ -44,7 +41,7 @@ class FileCacheDashboard implements DashboardInterface {
 
         $this->projects = Config::get('filecache', []);
 
-        $project = Http::get('server', 'int');
+        $project = Http::get('server', 0);
         $this->current_project = array_key_exists($project, $this->projects) ? $project : 0;
     }
 
