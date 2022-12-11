@@ -59,13 +59,17 @@ final class FileCacheTest extends TestCase {
 
         $this->path = __DIR__.'/file_cache';
 
-        if (!is_dir($this->path) && false === @mkdir($this->path, 0777, true) && !is_dir($this->path)) {
+        if (!is_dir($this->path) && @mkdir($this->path, 0777, true) === false && !is_dir($this->path)) {
             throw new RuntimeException(sprintf('Unable to create the "%s" directory.', $this->path));
         }
 
         $this->filecache = $dashboard->connect(['path' => $this->path]);
 
         self::setValue($dashboard, 'filecache', $this->filecache);
+    }
+
+    protected function tearDown(): void {
+        $this->rrmdir($this->path);
     }
 
     /**
@@ -163,9 +167,5 @@ final class FileCacheTest extends TestCase {
 
             rmdir($dir);
         }
-    }
-
-    protected function tearDown(): void {
-        $this->rrmdir($this->path);
     }
 }
