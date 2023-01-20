@@ -89,11 +89,8 @@ trait FileCacheTrait {
             $keys[] = [
                 'key'   => $key,
                 'items' => [
-                    'title' => [
-                        'title' => $key,
-                        'link'  => Http::queryString([], ['view' => 'key', 'key' => $key]),
-                    ],
-                    'ttl'   => $ttl === 0 ? 'Doesn\'t expire' : $ttl,
+                    'link_title' => $key,
+                    'ttl'        => $ttl === 0 ? 'Doesn\'t expire' : $ttl,
                 ],
             ];
         }
@@ -111,6 +108,7 @@ trait FileCacheTrait {
             'all_keys'    => count($keys),
             'new_key_url' => Http::queryString([], ['form' => 'new']),
             'paginator'   => $paginator->render(),
+            'view_key'    => Http::queryString([], ['view' => 'key', 'key' => '__key__']),
         ]);
     }
 }
