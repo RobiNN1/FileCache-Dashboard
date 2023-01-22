@@ -25,7 +25,7 @@ use RobiNN\Pca\Template;
 class FileCacheDashboard implements DashboardInterface {
     use FileCacheTrait;
 
-    final public const VERSION = '1.1.1';
+    final public const VERSION = '1.2.0';
 
     /**
      * @var array<int, array<string, int|string>>

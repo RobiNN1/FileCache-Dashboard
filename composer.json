@@ -19,8 +19,8 @@
     }
   ],
   "require": {
-    "php": ">=8.1",
-    "robinn/cache": "^2.4"
+    "php": ">=8.2",
+    "robinn/cache": "^2.5"
   },
   "require-dev": {
     "phpstan/phpstan": "^1.9",
