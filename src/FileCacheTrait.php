@@ -12,8 +12,7 @@ declare(strict_types=1);
 
 namespace RobiNN\FileCache;
 
-use RobiNN\Cache\CacheException;
-use RobiNN\Pca\Dashboards\DashboardException;
+use RobiNN\Cache\Cache;
 use RobiNN\Pca\Format;
 use RobiNN\Pca\Helpers;
 use RobiNN\Pca\Http;
@@ -21,31 +20,21 @@ use RobiNN\Pca\Paginator;
 use RobiNN\Pca\Value;
 
 trait FileCacheTrait {
-    /**
-     * @return array<int, mixed>
-     */
-    private function panels(): array {
-        $panels = [];
+    private function panels(): string {
+        $project = $this->projects[$this->current_project];
 
-        foreach ($this->projects as $id => $project) {
-            try {
-                $files = count($this->connect($project)->keys());
-            } catch (DashboardException|CacheException) {
-                $files = 'An error occurred while retrieving files.';
-            }
-
-            $panels[] = [
-                'title'            => $project['name'] ?? 'Project '.$id,
-                'server_selection' => true,
-                'current_server'   => $this->current_project,
-                'data'             => [
+        $panels = [
+            [
+                'title'             => 'FileCache',
+                'extension_version' => Cache::VERSION,
+                'data'              => [
                     'Path'  => is_dir((string) $project['path']) ? realpath((string) $project['path']) : $project['path'],
-                    'Files' => $files,
+                    'Files' => count($this->filecache->keys()),
                 ],
-            ];
-        }
+            ],
+        ];
 
-        return $panels;
+        return $this->template->render('partials/info', ['panels' => $panels]);
     }
 
     private function viewKey(): string {
@@ -103,7 +92,17 @@ trait FileCacheTrait {
 
         $paginator = new Paginator($this->template, $keys);
 
+        $projects = [];
+
+        foreach ($this->projects as $id => $project) {
+            if (!isset($project['name'])) {
+                $projects[$id]['name'] = 'Project '.$id;
+            }
+        }
+
         return $this->template->render('@filecache/filecache', [
+            'select'      => Helpers::serverSelector($this->template, $projects, $this->current_project),
+            'panels'      => $this->panels(),
             'keys'        => $paginator->getPaginated(),
             'all_keys'    => count($keys),
             'new_key_url' => Http::queryString([], ['form' => 'new']),

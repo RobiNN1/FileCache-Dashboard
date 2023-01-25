@@ -25,7 +25,7 @@ use RobiNN\Pca\Template;
 class FileCacheDashboard implements DashboardInterface {
     use FileCacheTrait;
 
-    final public const VERSION = '1.2.0';
+    final public const VERSION = '1.3.0';
 
     /**
      * @var array<int, array<string, int|string>>
@@ -98,19 +98,6 @@ class FileCacheDashboard implements DashboardInterface {
         }
 
         return $return;
-    }
-
-    public function infoPanels(): string {
-        // Hide panels on view-key page.
-        if (isset($_GET['view'], $_GET['key'])) {
-            return '';
-        }
-
-        return $this->template->render('partials/info', [
-            'title'             => 'FileCache',
-            'extension_version' => Cache::VERSION,
-            'info'              => ['panels' => $this->panels()],
-        ]);
     }
 
     public function dashboard(): string {
