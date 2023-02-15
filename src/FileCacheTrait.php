@@ -25,16 +25,15 @@ trait FileCacheTrait {
 
         $panels = [
             [
-                'title'             => 'FileCache',
-                'extension_version' => Cache::VERSION,
-                'data'              => [
+                'title' => 'FileCache <b>v'.Cache::VERSION.'</b>',
+                'data'  => [
                     'Path'  => is_dir((string) $project['path']) ? realpath((string) $project['path']) : $project['path'],
                     'Files' => count($this->filecache->keys()),
                 ],
             ],
         ];
 
-        return $this->template->render('partials/info', ['panels' => $panels]);
+        return $this->template->render('partials/info', ['panels' => $panels, 'thead' => false]);
     }
 
     private function viewKey(): string {
