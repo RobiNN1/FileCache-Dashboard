@@ -14,9 +14,6 @@ namespace Tests;
 
 use JsonException;
 use PHPUnit\Framework\TestCase;
-use ReflectionException;
-use ReflectionMethod;
-use ReflectionProperty;
 use RobiNN\Cache\CacheException;
 use RobiNN\Cache\Storages\FileStorage;
 use RobiNN\FileCache\FileCacheDashboard;
@@ -33,25 +30,7 @@ final class FileCacheTest extends TestCase {
     private string $path;
 
     /**
-     * Call private method.
-     *
-     * @throws ReflectionException
-     */
-    protected static function callMethod(object $object, string $name, mixed ...$args): mixed {
-        return (new ReflectionMethod($object, $name))->invokeArgs($object, $args);
-    }
-
-    /**
-     * Set the value of private property.
-     *
-     * @throws ReflectionException
-     */
-    protected static function setValue(object $object, string $name, mixed $value): void {
-        (new ReflectionProperty($object, $name))->setValue($object, $value);
-    }
-
-    /**
-     * @throws RuntimeException|DashboardException|CacheException|ReflectionException
+     * @throws RuntimeException|DashboardException|CacheException
      */
     protected function setUp(): void {
         $this->template = new Template();
@@ -64,8 +43,6 @@ final class FileCacheTest extends TestCase {
         }
 
         $this->filecache = $dashboard->connect(['path' => $this->path]);
-
-        self::setValue($dashboard, 'filecache', $this->filecache);
     }
 
     protected function tearDown(): void {
