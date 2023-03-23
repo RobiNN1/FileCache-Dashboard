@@ -70,17 +70,22 @@ trait FileCacheTrait {
      */
     private function getAllKeys(): array {
         static $keys = [];
+        $search = Http::get('s', '');
+
+        $this->template->addGlobal('search_value', $search);
 
         foreach ($this->filecache->keys() as $key) {
             $ttl = $this->filecache->ttl($key);
 
-            $keys[] = [
-                'key'   => $key,
-                'items' => [
-                    'link_title' => $key,
-                    'ttl'        => $ttl === 0 ? 'Doesn\'t expire' : $ttl,
-                ],
-            ];
+            if (stripos($key, $search) !== false) {
+                $keys[] = [
+                    'key'   => $key,
+                    'items' => [
+                        'link_title' => $key,
+                        'ttl'        => $ttl === 0 ? 'Doesn\'t expire' : $ttl,
+                    ],
+                ];
+            }
         }
 
         return $keys;
