@@ -108,7 +108,7 @@ trait FileCacheTrait {
             'select'      => Helpers::serverSelector($this->template, $projects, $this->current_project),
             'panels'      => $this->panels(),
             'keys'        => $paginator->getPaginated(),
-            'all_keys'    => count($keys),
+            'all_keys'    => count($this->filecache->keys()),
             'new_key_url' => Http::queryString([], ['form' => 'new']),
             'paginator'   => $paginator->render(),
             'view_key'    => Http::queryString([], ['view' => 'key', 'key' => '__key__']),
