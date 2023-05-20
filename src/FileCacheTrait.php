@@ -20,7 +20,10 @@ use RobiNN\Pca\Paginator;
 use RobiNN\Pca\Value;
 
 trait FileCacheTrait {
-    private function panels(): string {
+    /**
+     * @param array<int, string> $all_keys
+     */
+    private function panels(array $all_keys): string {
         $project = $this->projects[$this->current_project];
 
         $panels = [
@@ -28,7 +31,7 @@ trait FileCacheTrait {
                 'title' => 'FileCache <b>v'.Cache::VERSION.'</b>',
                 'data'  => [
                     'Path'  => is_dir((string) $project['path']) ? realpath((string) $project['path']) : $project['path'],
-                    'Files' => count($this->filecache->keys()),
+                    'Files' => count($all_keys),
                 ],
             ],
         ];
@@ -66,23 +69,22 @@ trait FileCacheTrait {
     }
 
     /**
+     * @param array<int, string> $all_keys
+     *
      * @return array<int, array<string, string|int>>
      */
-    private function getAllKeys(): array {
+    private function getAllKeys(array $all_keys): array {
         static $keys = [];
         $search = Http::get('s', '');
 
         $this->template->addGlobal('search_value', $search);
 
-        foreach ($this->filecache->keys() as $key) {
-            $ttl = $this->filecache->ttl($key);
-
+        foreach ($all_keys as $key) {
             if (stripos($key, $search) !== false) {
                 $keys[] = [
                     'key'   => $key,
                     'items' => [
                         'link_title' => $key,
-                        'ttl'        => $ttl === 0 ? 'Doesn\'t expire' : $ttl,
                     ],
                 ];
             }
@@ -92,7 +94,8 @@ trait FileCacheTrait {
     }
 
     private function mainDashboard(): string {
-        $keys = $this->getAllKeys();
+        $all_keys = $this->filecache->keys();
+        $keys = $this->getAllKeys($all_keys);
 
         $paginator = new Paginator($this->template, $keys);
 
@@ -106,9 +109,9 @@ trait FileCacheTrait {
 
         return $this->template->render('@filecache/filecache', [
             'select'      => Helpers::serverSelector($this->template, $projects, $this->current_project),
-            'panels'      => $this->panels(),
+            'panels'      => $this->panels($all_keys),
             'keys'        => $paginator->getPaginated(),
-            'all_keys'    => count($this->filecache->keys()),
+            'all_keys'    => count($all_keys),
             'new_key_url' => Http::queryString([], ['form' => 'new']),
             'paginator'   => $paginator->render(),
             'view_key'    => Http::queryString([], ['view' => 'key', 'key' => '__key__']),
