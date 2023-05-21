@@ -80,11 +80,17 @@ trait FileCacheTrait {
         $this->template->addGlobal('search_value', $search);
 
         foreach ($all_keys as $key) {
+            if (count($all_keys) < 1000) {
+                $ttl = $this->filecache->ttl($key);
+                $ttl = $ttl === 0 ? 'Doesn\'t expire' : $ttl;
+            }
+
             if (stripos($key, $search) !== false) {
                 $keys[] = [
                     'key'   => $key,
                     'items' => [
                         'link_title' => $key,
+                        'ttl'        => $ttl ?? 'No info',
                     ],
                 ];
             }
