@@ -28,7 +28,7 @@ trait FileCacheTrait {
 
         $panels = [
             [
-                'title' => 'FileCache <b>v'.Cache::VERSION.'</b>',
+                'title' => 'FileCache <span class="font-semibold">v'.Cache::VERSION.'</span>',
                 'data'  => [
                     'Path'  => is_dir((string) $project['path']) ? realpath((string) $project['path']) : $project['path'],
                     'Files' => count($all_keys),
