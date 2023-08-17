@@ -10,9 +10,8 @@
 
 declare(strict_types=1);
 
-namespace Tests;
+namespace RobiNN\FileCache\Tests;
 
-use JsonException;
 use PHPUnit\Framework\TestCase;
 use RobiNN\Cache\CacheException;
 use RobiNN\Cache\Storages\FileStorage;
@@ -50,25 +49,23 @@ final class FileCacheTest extends TestCase {
     }
 
     /**
-     * @throws JsonException
+     * @param string|array<int, string> $keys
      */
+    private function deleteKeys(array|string $keys): void {
+        $this->assertSame(
+            $this->template->render('components/alert', ['message' => (is_array($keys) ? 'Keys' : 'Key "'.$keys.'"').' has been deleted.']),
+            Helpers::deleteKey($this->template, fn (string $key): bool => $this->filecache->delete($key), false, $keys)
+        );
+    }
+
     public function testDeleteKey(): void {
         $key = 'pu-test-delete-key';
 
         $this->filecache->set($key, 'data');
-
-        $_POST['delete'] = json_encode($key, JSON_THROW_ON_ERROR);
-
-        $this->assertSame(
-            $this->template->render('components/alert', ['message' => 'Key "'.$key.'" has been deleted.']),
-            Helpers::deleteKey($this->template, fn (string $key): bool => $this->filecache->delete($key))
-        );
+        $this->deleteKeys($key);
         $this->assertFalse($this->filecache->exists($key));
     }
 
-    /**
-     * @throws JsonException
-     */
     public function testDeleteKeys(): void {
         $key1 = 'pu-test-delete-key1';
         $key2 = 'pu-test-delete-key2';
@@ -78,68 +75,52 @@ final class FileCacheTest extends TestCase {
         $this->filecache->set($key2, 'data2');
         $this->filecache->set($key3, 'data3');
 
-        $_POST['delete'] = json_encode([$key1, $key2, $key3], JSON_THROW_ON_ERROR);
+        $this->deleteKeys([$key1, $key2, $key3]);
 
-        $this->assertSame(
-            $this->template->render('components/alert', ['message' => 'Keys has been deleted.']),
-            Helpers::deleteKey($this->template, fn (string $key): bool => $this->filecache->delete($key))
-        );
         $this->assertFalse($this->filecache->exists($key1));
         $this->assertFalse($this->filecache->exists($key2));
         $this->assertFalse($this->filecache->exists($key3));
     }
 
-    public function testSetGetKey(): void {
-        $keys = [
-            'string' => ['original' => 'phpCacheAdmin', 'expected' => 'phpCacheAdmin'],
-            'int'    => ['original' => 23, 'expected' => '23'],
-            'float'  => ['original' => 23.99, 'expected' => '23.99'],
-            'bool'   => ['original' => true, 'expected' => '1'],
-            'null'   => ['original' => null, 'expected' => ''],
-            'array'  => [
-                'original' => ['key1', 'key2'],
-                'expected' => 'a:2:{i:0;s:4:"key1";i:1;s:4:"key2";}',
-            ],
-            'object' => [
-                'original' => (object) ['key1', 'key2'],
-                'expected' => 'O:8:"stdClass":2:{s:1:"0";s:4:"key1";s:1:"1";s:4:"key2";}',
-            ],
+    /**
+     * @return array<int, mixed>
+     */
+    public static function keysProvider(): array {
+        return [
+            ['string', 'phpCacheAdmin', 'phpCacheAdmin'],
+            ['int', 23, '23'],
+            ['float', 23.99, '23.99'],
+            ['bool', true, '1'],
+            ['null', null, ''],
+            ['array', ['key1', 'key2'], 'a:2:{i:0;s:4:"key1";i:1;s:4:"key2";}',],
+            ['object', (object) ['key1', 'key2'], 'O:8:"stdClass":2:{s:1:"0";s:4:"key1";s:1:"1";s:4:"key2";}',],
         ];
+    }
 
-        foreach ($keys as $key => $value) {
-            $this->filecache->set('pu-test-'.$key, $value['original']);
-        }
-
-        $this->assertSame($keys['string']['expected'], Helpers::mixedToString($this->filecache->get('pu-test-string')));
-        $this->assertSame($keys['int']['expected'], Helpers::mixedToString($this->filecache->get('pu-test-int')));
-        $this->assertSame($keys['float']['expected'], Helpers::mixedToString($this->filecache->get('pu-test-float')));
-        $this->assertSame($keys['bool']['expected'], Helpers::mixedToString($this->filecache->get('pu-test-bool')));
-        $this->assertSame($keys['null']['expected'], Helpers::mixedToString($this->filecache->get('pu-test-null')));
-        $this->assertSame($keys['array']['expected'], Helpers::mixedToString($this->filecache->get('pu-test-array')));
-        $this->assertSame($keys['object']['expected'], Helpers::mixedToString($this->filecache->get('pu-test-object')));
-
-        foreach ($keys as $key => $value) {
-            $this->filecache->delete('pu-test-'.$key);
-        }
+    /**
+     * @dataProvider keysProvider
+     */
+    public function testSetGetKey(string $type, mixed $original, mixed $expected): void {
+        $this->filecache->set('pu-test-'.$type, $original);
+        $this->assertSame($expected, Helpers::mixedToString($this->filecache->get('pu-test-'.$type)));
+        $this->filecache->delete('pu-test-'.$type);
     }
 
     /**
      * Recursively remove folder and all files/subdirectories.
      *
-     * @param string $dir Path to the folder.
+     * @param string $dir Path to the directory.
+     *
+     * @return void
      */
     public function rrmdir(string $dir): void {
         if (is_dir($dir)) {
-            $objects = (array) scandir($dir);
+            $directory_contents = array_diff((array) scandir($dir), ['.', '..']);
 
-            foreach ($objects as $object) {
-                if ($object !== '.' && $object !== '..') {
-                    if (filetype($dir.'/'.$object) === 'dir') {
-                        $this->rrmdir($dir.'/'.$object);
-                    } else {
-                        unlink($dir.'/'.$object);
-                    }
-                }
+            foreach ($directory_contents as $content) {
+                $content_path = $dir.DIRECTORY_SEPARATOR.$content;
+
+                is_dir($content_path) ? $this->rrmdir($content_path) : unlink($content_path);
             }
 
             rmdir($dir);
