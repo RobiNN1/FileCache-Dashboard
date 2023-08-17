@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace RobiNN\FileCache\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use RobiNN\Cache\CacheException;
 use RobiNN\Cache\Storages\FileStorage;
@@ -97,9 +98,7 @@ final class FileCacheTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider keysProvider
-     */
+    #[DataProvider('keysProvider')]
     public function testSetGetKey(string $type, mixed $original, mixed $expected): void {
         $this->filecache->set('pu-test-'.$type, $original);
         $this->assertSame($expected, Helpers::mixedToString($this->filecache->get('pu-test-'.$type)));
@@ -110,8 +109,6 @@ final class FileCacheTest extends TestCase {
      * Recursively remove folder and all files/subdirectories.
      *
      * @param string $dir Path to the directory.
-     *
-     * @return void
      */
     public function rrmdir(string $dir): void {
         if (is_dir($dir)) {

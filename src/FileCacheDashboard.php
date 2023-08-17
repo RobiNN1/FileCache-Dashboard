@@ -101,7 +101,7 @@ class FileCacheDashboard implements DashboardInterface {
     }
 
     public function dashboard(): string {
-        if (count($this->projects) === 0) {
+        if ($this->projects === []) {
             return 'No projects';
         }
 
