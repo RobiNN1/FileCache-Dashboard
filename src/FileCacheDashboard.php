@@ -78,26 +78,25 @@ class FileCacheDashboard implements DashboardInterface {
     }
 
     public function ajax(): string {
-        $return = '';
         $projects = $this->projects;
 
         try {
             $this->filecache = $this->connect($projects[$this->current_project]);
 
             if (isset($_GET['deleteall']) && $this->filecache->flush()) {
-                $return = $this->template->render('components/alert', [
+                return $this->template->render('components/alert', [
                     'message' => 'Cache has been cleaned.',
                 ]);
             }
 
             if (isset($_GET['delete'])) {
-                $return = Helpers::deleteKey($this->template, fn (string $key): bool => $this->filecache->delete($key));
+                return Helpers::deleteKey($this->template, fn (string $key): bool => $this->filecache->delete($key));
             }
         } catch (DashboardException|CacheException $e) {
-            $return = $e->getMessage();
+            return $e->getMessage();
         }
 
-        return $return;
+        return '';
     }
 
     public function dashboard(): string {
@@ -109,14 +108,12 @@ class FileCacheDashboard implements DashboardInterface {
             $this->filecache = $this->connect($this->projects[$this->current_project]);
 
             if (isset($_GET['view'], $_GET['key'])) {
-                $return = $this->viewKey();
-            } else {
-                $return = $this->mainDashboard();
+                return $this->viewKey();
             }
+
+            return $this->mainDashboard();
         } catch (DashboardException|CacheException $e) {
             return $e->getMessage();
         }
-
-        return $return;
     }
 }
