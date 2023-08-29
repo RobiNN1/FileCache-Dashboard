@@ -53,15 +53,15 @@ trait FileCacheTrait {
 
         $value = Helpers::mixedToString($this->filecache->get($key));
 
-        [$value, $encode_fn, $is_formatted] = Value::format($value);
+        [$formatted_value, $encode_fn, $is_formatted] = Value::format($value);
 
         $ttl = $this->filecache->ttl($key) === 0 ? -1 : $this->filecache->ttl($key);
 
         return $this->template->render('partials/view_key', [
             'key'        => $key,
-            'value'      => $value,
+            'value'      => $formatted_value,
             'ttl'        => Format::seconds($ttl),
-            'size'       => Format::bytes(strlen((string) $value)),
+            'size'       => Format::bytes(strlen($value)),
             'encode_fn'  => $encode_fn,
             'formatted'  => $is_formatted,
             'delete_url' => Http::queryString(['view'], ['delete' => 'key', 'key' => $key]),
