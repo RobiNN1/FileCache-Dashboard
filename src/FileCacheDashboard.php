@@ -84,9 +84,7 @@ class FileCacheDashboard implements DashboardInterface {
             $this->filecache = $this->connect($projects[$this->current_project]);
 
             if (isset($_GET['deleteall']) && $this->filecache->flush()) {
-                return $this->template->render('components/alert', [
-                    'message' => 'Cache has been cleaned.',
-                ]);
+                return Helpers::alert($this->template, 'Cache has been cleaned.', 'success');
             }
 
             if (isset($_GET['delete'])) {
