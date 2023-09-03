@@ -54,7 +54,7 @@ final class FileCacheTest extends TestCase {
      */
     private function deleteKeys(array|string $keys): void {
         $this->assertSame(
-            $this->template->render('components/alert', ['message' => (is_array($keys) ? 'Keys' : 'Key "'.$keys.'"').' has been deleted.']),
+            Helpers::alert($this->template, (is_array($keys) ? 'Keys' : 'Key "'.$keys.'"').' has been deleted.', 'success'),
             Helpers::deleteKey($this->template, fn (string $key): bool => $this->filecache->delete($key), false, $keys)
         );
     }
