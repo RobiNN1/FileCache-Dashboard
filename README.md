@@ -35,17 +35,3 @@ the project or have access to folders outside of website root.
 
 - PHP >= 8.2
 - phpCacheAdmin >= 1.6.0
-
-## Testing
-
-PHPUnit
-
-```
-composer test
-```
-
-PHPStan
-
-```
-composer phpstan
-```
