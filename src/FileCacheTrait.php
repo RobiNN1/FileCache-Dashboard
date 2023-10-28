@@ -1,11 +1,7 @@
 <?php
 /**
- * This file is part of FileCache-Dashboard.
- *
+ * This file is part of the FileCache-Dashboard.
  * Copyright (c) Róbert Kelčák (https://kelcak.com/)
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
  */
 
 declare(strict_types=1);
