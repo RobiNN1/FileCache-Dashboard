@@ -21,7 +21,7 @@ use RobiNN\Pca\Template;
 class FileCacheDashboard implements DashboardInterface {
     use FileCacheTrait;
 
-    final public const VERSION = '1.4.0';
+    final public const VERSION = '1.5.0';
 
     /**
      * @var array<int, array<string, int|string>>
@@ -31,6 +31,11 @@ class FileCacheDashboard implements DashboardInterface {
     private int $current_project;
 
     private FileStorage $filecache;
+
+    /**
+     * @var array<int, string>
+     */
+    private array $all_keys = [];
 
     public function __construct(private readonly Template $template) {
         $this->template->addPath('filecache', __DIR__.'/../templates');
@@ -100,6 +105,19 @@ class FileCacheDashboard implements DashboardInterface {
 
         try {
             $this->filecache = $this->connect($this->projects[$this->current_project]);
+            $this->all_keys = $this->filecache->keys();
+
+            $projects = [];
+
+            foreach ($this->projects as $id => $project) {
+                if (!isset($project['name'])) {
+                    $projects[$id]['name'] = 'Project '.$id;
+                }
+            }
+
+            $select = Helpers::serverSelector($this->template, $projects, $this->current_project);
+
+            $this->template->addGlobal('side', $select.$this->panels());
 
             if (isset($_GET['view'], $_GET['key'])) {
                 return $this->viewKey();

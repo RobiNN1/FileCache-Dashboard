@@ -16,23 +16,20 @@ use RobiNN\Pca\Paginator;
 use RobiNN\Pca\Value;
 
 trait FileCacheTrait {
-    /**
-     * @param array<int, string> $all_keys
-     */
-    private function panels(array $all_keys): string {
+    private function panels(): string {
         $project = $this->projects[$this->current_project];
 
         $panels = [
             [
-                'title' => 'FileCache <span>v'.Cache::VERSION.'</span>',
+                'title' => 'FileCache v'.Cache::VERSION,
                 'data'  => [
                     'Path'  => is_dir((string) $project['path']) ? realpath((string) $project['path']) : $project['path'],
-                    'Files' => count($all_keys),
+                    'Files' => count($this->all_keys),
                 ],
             ],
         ];
 
-        return $this->template->render('partials/info', ['panels' => $panels, 'thead' => false]);
+        return $this->template->render('partials/info', ['panels' => $panels, 'left' => true]);
     }
 
     private function viewKey(): string {
@@ -65,18 +62,16 @@ trait FileCacheTrait {
     }
 
     /**
-     * @param array<int, string> $all_keys
-     *
      * @return array<int, array<string, string|int>>
      */
-    private function getAllKeys(array $all_keys): array {
+    private function getAllKeys(): array {
         static $keys = [];
         $search = Http::get('s', '');
 
         $this->template->addGlobal('search_value', $search);
 
-        foreach ($all_keys as $key) {
-            if (count($all_keys) < 1000) {
+        foreach ($this->all_keys as $key) {
+            if (count($this->all_keys) < 1000) {
                 $ttl = $this->filecache->ttl($key);
                 $ttl = $ttl === 0 ? 'Doesn\'t expire' : $ttl;
             }
@@ -96,24 +91,13 @@ trait FileCacheTrait {
     }
 
     private function mainDashboard(): string {
-        $all_keys = $this->filecache->keys();
-        $keys = $this->getAllKeys($all_keys);
+        $keys = $this->getAllKeys();
 
         $paginator = new Paginator($this->template, $keys);
 
-        $projects = [];
-
-        foreach ($this->projects as $id => $project) {
-            if (!isset($project['name'])) {
-                $projects[$id]['name'] = 'Project '.$id;
-            }
-        }
-
         return $this->template->render('@filecache/filecache', [
-            'select'      => Helpers::serverSelector($this->template, $projects, $this->current_project),
-            'panels'      => $this->panels($all_keys),
             'keys'        => $paginator->getPaginated(),
-            'all_keys'    => count($all_keys),
+            'all_keys'    => count($this->all_keys),
             'new_key_url' => Http::queryString([], ['form' => 'new']),
             'paginator'   => $paginator->render(),
             'view_key'    => Http::queryString([], ['view' => 'key', 'key' => '__key__']),

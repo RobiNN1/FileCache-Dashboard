@@ -3,9 +3,9 @@
 FileCache ([`robinn/cache`](https://github.com/RobiNN1/Cache)) dashboard
 for [phpCacheAdmin](https://github.com/RobiNN1/phpCacheAdmin).
 
-![Visitor Badge](https://visitor-badge.laobi.icu/badge?page_id=RobiNN1.FileCache-Dashboard)
+<p align="center"><img alt="FileCache" src=".github/img/filecache.png" width="300px"></p>
 
-![FileCache](.github/img/filecache.png)
+![Visitor Badge](https://visitor-badge.laobi.icu/badge?page_id=RobiNN1.FileCache-Dashboard)
 
 ## Installation
 
@@ -34,4 +34,4 @@ the project or have access to folders outside of website root.
 ## Requirements
 
 - PHP >= 8.2
-- phpCacheAdmin >= 1.6.0
+- phpCacheAdmin >= 2.0.0
