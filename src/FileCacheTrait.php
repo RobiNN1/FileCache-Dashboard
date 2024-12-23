@@ -96,11 +96,10 @@ trait FileCacheTrait {
         $paginator = new Paginator($this->template, $keys);
 
         return $this->template->render('@filecache/filecache', [
-            'keys'        => $paginator->getPaginated(),
-            'all_keys'    => count($this->all_keys),
-            'new_key_url' => Http::queryString([], ['form' => 'new']),
-            'paginator'   => $paginator->render(),
-            'view_key'    => Http::queryString([], ['view' => 'key', 'key' => '__key__']),
+            'keys'      => $paginator->getPaginated(),
+            'all_keys'  => count($this->all_keys),
+            'paginator' => $paginator->render(),
+            'view_key'  => Http::queryString([], ['view' => 'key', 'key' => '__key__']),
         ]);
     }
 }
