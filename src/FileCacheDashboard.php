@@ -103,21 +103,21 @@ class FileCacheDashboard implements DashboardInterface {
             return 'No projects';
         }
 
+        $projects = [];
+
+        foreach ($this->projects as $id => $project) {
+            if (!isset($project['name'])) {
+                $projects[$id]['name'] = 'Project '.$id;
+            }
+        }
+
+        $this->template->addGlobal('servers', Helpers::serverSelector($this->template, $projects, $this->current_project));
+
         try {
             $this->filecache = $this->connect($this->projects[$this->current_project]);
             $this->all_keys = $this->filecache->keys();
 
-            $projects = [];
-
-            foreach ($this->projects as $id => $project) {
-                if (!isset($project['name'])) {
-                    $projects[$id]['name'] = 'Project '.$id;
-                }
-            }
-
-            $select = Helpers::serverSelector($this->template, $projects, $this->current_project);
-
-            $this->template->addGlobal('side', $select.$this->panels());
+            $this->template->addGlobal('side', $this->panels());
 
             if (isset($_GET['view'], $_GET['key'])) {
                 return $this->viewKey();
