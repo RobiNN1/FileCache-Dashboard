@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace RobiNN\FileCache\Tests;
 
+use JsonException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use RobiNN\Cache\CacheException;
@@ -46,12 +47,20 @@ final class FileCacheTest extends TestCase {
     }
 
     /**
-     * @param string|array<int, string> $keys
+     * @param array<int, string>|string $keys
      */
     private function deleteKeys(array|string $keys): void {
+        $delete_key = fn (string $key): bool => $this->filecache->delete($key);
+
+        try {
+            $_POST['delete'] = json_encode($keys, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            //
+        }
+
         $this->assertSame(
             Helpers::alert($this->template, (is_array($keys) ? 'Keys' : 'Key "'.$keys.'"').' has been deleted.', 'success'),
-            Helpers::deleteKey($this->template, fn (string $key): bool => $this->filecache->delete($key), false, $keys)
+            Helpers::deleteKey($this->template, $delete_key)
         );
     }
 
