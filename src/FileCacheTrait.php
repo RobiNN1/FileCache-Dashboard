@@ -78,8 +78,8 @@ trait FileCacheTrait {
 
             if (stripos($key, $search) !== false) {
                 $keys[] = [
-                    'key'   => $key,
-                    'items' => [
+                    'key'  => $key,
+                    'info' => [
                         'link_title' => $key,
                         'ttl'        => $ttl ?? 'No info',
                     ],
