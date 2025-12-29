@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace RobiNN\FileCache\Tests;
 
+use Iterator;
 use JsonException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -89,18 +90,16 @@ final class FileCacheTest extends TestCase {
     }
 
     /**
-     * @return array<int, mixed>
+     * @return Iterator<int, mixed>
      */
-    public static function keysProvider(): array {
-        return [
-            ['string', 'phpCacheAdmin', 'phpCacheAdmin'],
-            ['int', 23, '23'],
-            ['float', 23.99, '23.99'],
-            ['bool', true, '1'],
-            ['null', null, ''],
-            ['array', ['key1', 'key2'], 'a:2:{i:0;s:4:"key1";i:1;s:4:"key2";}'],
-            ['object', (object) ['key1', 'key2'], 'O:8:"stdClass":2:{s:1:"0";s:4:"key1";s:1:"1";s:4:"key2";}'],
-        ];
+    public static function keysProvider(): Iterator {
+        yield ['string', 'phpCacheAdmin', 'phpCacheAdmin'];
+        yield ['int', 23, '23'];
+        yield ['float', 23.99, '23.99'];
+        yield ['bool', true, '1'];
+        yield ['null', null, ''];
+        yield ['array', ['key1', 'key2'], 'a:2:{i:0;s:4:"key1";i:1;s:4:"key2";}'];
+        yield ['object', (object) ['key1', 'key2'], 'O:8:"stdClass":2:{s:1:"0";s:4:"key1";s:1:"1";s:4:"key2";}'];
     }
 
     #[DataProvider('keysProvider')]

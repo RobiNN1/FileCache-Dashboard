@@ -3,7 +3,7 @@
 FileCache ([`robinn/cache`](https://github.com/RobiNN1/Cache)) dashboard
 for [phpCacheAdmin](https://github.com/RobiNN1/phpCacheAdmin).
 
-<p align="center"><img alt="FileCache" src=".github/img/filecache.png" width="300px"></p>
+<p align="center"><img alt="FileCache" src=".github/img/preview.png" width="500px"></p>
 
 ![Visitor Badge](https://visitor-badge.laobi.icu/badge?page_id=RobiNN1.FileCache-Dashboard)
 
@@ -29,7 +29,7 @@ In phpCacheAdmin's `config.php` add class to the `dashboards` list and add `file
 ```
 
 For this to work, phpCacheAdmin should be in the same directory as
-the project or have access to folders outside of website root.
+the project or have access to folders outside the website root.
 
 ## Requirements
 

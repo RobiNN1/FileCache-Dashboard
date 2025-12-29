@@ -21,7 +21,7 @@ use RobiNN\Pca\Template;
 class FileCacheDashboard implements DashboardInterface {
     use FileCacheTrait;
 
-    final public const VERSION = '2.0.0';
+    final public const VERSION = '2.0.1';
 
     /**
      * @var array<int, array<string, int|string>>
@@ -103,15 +103,7 @@ class FileCacheDashboard implements DashboardInterface {
             return 'No projects';
         }
 
-        $projects = [];
-
-        foreach ($this->projects as $id => $project) {
-            if (!isset($project['name'])) {
-                $projects[$id]['name'] = 'Project '.$id;
-            }
-        }
-
-        $this->template->addGlobal('servers', Helpers::serverSelector($this->template, $projects, $this->current_project));
+        $this->template->addGlobal('servers', Helpers::serverSelector($this->template, $this->projects, $this->current_project));
 
         try {
             $this->filecache = $this->connect($this->projects[$this->current_project]);
