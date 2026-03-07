@@ -12,6 +12,7 @@ use RobiNN\Cache\Cache;
 use RobiNN\Cache\CacheException;
 use RobiNN\Cache\Storages\FileStorage;
 use RobiNN\Pca\Config;
+use RobiNN\Pca\Csrf;
 use RobiNN\Pca\Dashboards\DashboardException;
 use RobiNN\Pca\Dashboards\DashboardInterface;
 use RobiNN\Pca\Helpers;
@@ -21,7 +22,7 @@ use RobiNN\Pca\Template;
 class FileCacheDashboard implements DashboardInterface {
     use FileCacheTrait;
 
-    final public const VERSION = '2.0.1';
+    final public const VERSION = '2.1.0';
 
     /**
      * @var array<int, array<string, int|string>>
@@ -84,11 +85,21 @@ class FileCacheDashboard implements DashboardInterface {
         try {
             $this->filecache = $this->connect($projects[$this->current_project]);
 
-            if (isset($_GET['deleteall']) && $this->filecache->flush()) {
-                return Helpers::alert($this->template, 'Cache has been cleaned.', 'success');
+            if (isset($_GET['deleteall'])) {
+                if (!Csrf::validateToken(Http::post('csrf_token', ''))) {
+                    return Helpers::alert($this->template, 'Invalid CSRF token.', 'error');
+                }
+
+                if ($this->filecache->flush()) {
+                    return Helpers::alert($this->template, 'Cache has been cleaned.', 'success');
+                }
             }
 
             if (isset($_GET['delete'])) {
+                if (!Csrf::validateToken(Http::post('csrf_token', ''))) {
+                    return Helpers::alert($this->template, 'Invalid CSRF token.', 'error');
+                }
+
                 return Helpers::deleteKey($this->template, fn (string $key): bool => $this->filecache->delete($key));
             }
         } catch (DashboardException|CacheException $e) {

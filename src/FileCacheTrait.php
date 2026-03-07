@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace RobiNN\FileCache;
 
 use RobiNN\Cache\Cache;
+use RobiNN\Pca\Csrf;
 use RobiNN\Pca\Format;
 use RobiNN\Pca\Helpers;
 use RobiNN\Pca\Http;
@@ -39,9 +40,13 @@ trait FileCacheTrait {
             Http::redirect();
         }
 
-        if (isset($_GET['delete'])) {
-            $this->filecache->delete($key);
-            Http::redirect();
+        if (isset($_POST['delete'])) {
+            if (!Csrf::validateToken(Http::post('csrf_token', ''))) {
+                Helpers::alert($this->template, 'Invalid CSRF token.', 'error');
+            } else {
+                $this->filecache->delete($key);
+                Http::redirect();
+            }
         }
 
         $value = Helpers::mixedToString($this->filecache->get($key));
@@ -51,13 +56,12 @@ trait FileCacheTrait {
         $ttl = $this->filecache->ttl($key) === 0 ? -1 : $this->filecache->ttl($key);
 
         return $this->template->render('partials/view_key', [
-            'key'        => $key,
-            'value'      => $formatted_value,
-            'ttl'        => Format::seconds($ttl),
-            'size'       => Format::bytes(strlen($value)),
-            'encode_fn'  => $encode_fn,
-            'formatted'  => $is_formatted,
-            'delete_url' => Http::queryString(['view'], ['delete' => 'key', 'key' => $key]),
+            'key'       => $key,
+            'value'     => $formatted_value,
+            'ttl'       => Format::seconds($ttl),
+            'size'      => Format::bytes(strlen($value)),
+            'encode_fn' => $encode_fn,
+            'formatted' => $is_formatted,
         ]);
     }
 
