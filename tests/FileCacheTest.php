@@ -21,8 +21,6 @@ use RobiNN\Pca\Template;
 use RuntimeException;
 
 final class FileCacheTest extends TestCase {
-    private Template $template;
-
     private FileStorage $filecache;
 
     private string $path;
@@ -31,8 +29,7 @@ final class FileCacheTest extends TestCase {
      * @throws RuntimeException|DashboardException|CacheException
      */
     protected function setUp(): void {
-        $this->template = new Template();
-        $dashboard = new FileCacheDashboard($this->template);
+        $dashboard = new FileCacheDashboard(new Template());
 
         $this->path = __DIR__.'/file_cache';
 
@@ -50,18 +47,18 @@ final class FileCacheTest extends TestCase {
     /**
      * @param array<int, string>|string $keys
      */
-    private function deleteKeys(array|string $keys): void {
-        $delete_key = fn (string $key): bool => $this->filecache->delete($key);
+    public function deleteKeysHelper(array|string $keys, callable $delete_key): void {
+        $keys_b64 = is_array($keys) ? array_map(base64_encode(...), $keys) : base64_encode($keys);
 
         try {
-            $_POST['delete'] = json_encode($keys, JSON_THROW_ON_ERROR);
+            $_POST['delete'] = json_encode($keys_b64, JSON_THROW_ON_ERROR);
         } catch (JsonException) {
             //
         }
 
         $this->assertSame(
-            Helpers::alert($this->template, (is_array($keys) ? 'Keys' : 'Key "'.$keys.'"').' has been deleted.', 'success'),
-            Helpers::deleteKey($this->template, $delete_key)
+            Helpers::alert(is_array($keys) ? 'Keys have been deleted.' : 'Key "'.$keys.'" has been deleted.', 'success'),
+            Helpers::deleteKey($delete_key)
         );
     }
 
@@ -69,7 +66,7 @@ final class FileCacheTest extends TestCase {
         $key = 'pu-test-delete-key';
 
         $this->filecache->set($key, 'data');
-        $this->deleteKeys($key);
+        $this->deleteKeysHelper($key, fn (string $key): bool => $this->filecache->delete($key));
         $this->assertFalse($this->filecache->exists($key));
     }
 
@@ -82,7 +79,7 @@ final class FileCacheTest extends TestCase {
         $this->filecache->set($key2, 'data2');
         $this->filecache->set($key3, 'data3');
 
-        $this->deleteKeys([$key1, $key2, $key3]);
+        $this->deleteKeysHelper([$key1, $key2, $key3], fn (string $key): bool => $this->filecache->delete($key));
 
         $this->assertFalse($this->filecache->exists($key1));
         $this->assertFalse($this->filecache->exists($key2));
@@ -107,6 +104,27 @@ final class FileCacheTest extends TestCase {
         $this->filecache->set('pu-test-'.$type, $original);
         $this->assertSame($expected, Helpers::mixedToString($this->filecache->get('pu-test-'.$type)));
         $this->filecache->delete('pu-test-'.$type);
+    }
+
+    /**
+     * @throws DashboardException|CacheException
+     */
+    public function testProjectWithSecret(): void {
+        $dashboard = new FileCacheDashboard(new Template());
+        $secured = $dashboard->connect(['path' => $this->path, 'secret' => 'secret_key']);
+
+        $secured->set('pu-test-secret', 'data');
+
+        // Dashboard connected without the secret, like actions in the key list.
+        $keys = $this->filecache->keys();
+
+        $this->assertContains('pu-test-secret', $keys);
+
+        $name = (string) array_search('pu-test-secret', $keys, true);
+
+        $this->assertSame('data', $this->filecache->get($name));
+        $this->assertGreaterThanOrEqual(0, $this->filecache->ttl($name));
+        $this->assertTrue($this->filecache->delete($name));
     }
 
     /**

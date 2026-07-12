@@ -1,7 +1,6 @@
 # FileCache-Dashboard
 
-FileCache ([`robinn/cache`](https://github.com/RobiNN1/Cache)) dashboard
-for [phpCacheAdmin](https://github.com/RobiNN1/phpCacheAdmin).
+FileCache ([`robinn/cache`](https://github.com/RobiNN1/Cache)) dashboard for [phpCacheAdmin](https://github.com/RobiNN1/phpCacheAdmin).
 
 <p align="center"><img alt="FileCache" src=".github/img/preview.png" width="500px"></p>
 
@@ -33,5 +32,5 @@ the project or have access to folders outside the website root.
 
 ## Requirements
 
-- PHP >= 8.2
-- phpCacheAdmin >= 2.5.0
+- PHP >= 8.4
+- phpCacheAdmin >= 2.6.0

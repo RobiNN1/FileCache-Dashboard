@@ -22,7 +22,7 @@ use RobiNN\Pca\Template;
 class FileCacheDashboard implements DashboardInterface {
     use FileCacheTrait;
 
-    final public const VERSION = '2.1.0';
+    final public const string VERSION = '2.1.0';
 
     /**
      * @var array<int, array<string, int|string>>
@@ -32,11 +32,6 @@ class FileCacheDashboard implements DashboardInterface {
     private int $current_project;
 
     private FileStorage $filecache;
-
-    /**
-     * @var array<int, string>
-     */
-    private array $all_keys = [];
 
     public function __construct(private readonly Template $template) {
         $this->template->addPath('filecache', __DIR__.'/../templates');
@@ -70,37 +65,46 @@ class FileCacheDashboard implements DashboardInterface {
      * @throws DashboardException|CacheException
      */
     public function connect(array $project): FileStorage {
+        // FileStorage would create a missing directory, the dashboard should only read existing ones.
+        if (!isset($project['path']) || !is_dir((string) $project['path'])) {
+            throw new DashboardException(sprintf('Directory "%s" does not exist.', $project['path'] ?? ''));
+        }
+
         $filecache = new FileStorage($project);
 
         if (!$filecache->isConnected()) {
-            throw new DashboardException(sprintf('Directory "%s" does not exists.', $project['path']));
+            throw new DashboardException(sprintf('Directory "%s" is not writable.', $project['path']));
         }
 
         return $filecache;
     }
 
     public function ajax(): string {
-        $projects = $this->projects;
+        if (!isset($this->projects[$this->current_project])) {
+            return Helpers::alert('No projects.', 'error');
+        }
 
         try {
-            $this->filecache = $this->connect($projects[$this->current_project]);
+            $this->filecache = $this->connect($this->projects[$this->current_project]);
 
             if (isset($_GET['deleteall'])) {
                 if (!Csrf::validateToken(Http::post('csrf_token', ''))) {
-                    return Helpers::alert($this->template, 'Invalid CSRF token.', 'error');
+                    return Helpers::alert('Invalid CSRF token.', 'error');
                 }
 
                 if ($this->filecache->flush()) {
-                    return Helpers::alert($this->template, 'Cache has been cleaned.', 'success');
+                    return Helpers::alert('Cache has been cleaned.', 'success');
                 }
+
+                return Helpers::alert('An error occurred while cleaning the cache.', 'error');
             }
 
             if (isset($_GET['delete'])) {
                 if (!Csrf::validateToken(Http::post('csrf_token', ''))) {
-                    return Helpers::alert($this->template, 'Invalid CSRF token.', 'error');
+                    return Helpers::alert('Invalid CSRF token.', 'error');
                 }
 
-                return Helpers::deleteKey($this->template, fn (string $key): bool => $this->filecache->delete($key));
+                return Helpers::deleteKey(fn (string $key): bool => $this->filecache->delete($key));
             }
         } catch (DashboardException|CacheException $e) {
             return $e->getMessage();
@@ -114,19 +118,19 @@ class FileCacheDashboard implements DashboardInterface {
             return 'No projects';
         }
 
-        $this->template->addGlobal('servers', Helpers::serverSelector($this->template, $this->projects, $this->current_project));
+        $this->template->addGlobal('servers', Helpers::serverSelector($this->projects, $this->current_project));
 
         try {
             $this->filecache = $this->connect($this->projects[$this->current_project]);
-            $this->all_keys = $this->filecache->keys();
+            $all_keys = $this->filecache->keys();
 
-            $this->template->addGlobal('side', $this->panels());
+            $this->template->addGlobal('side', $this->panels($all_keys));
 
             if (isset($_GET['view'], $_GET['key'])) {
-                return $this->viewKey();
+                return $this->viewKey($all_keys);
             }
 
-            return $this->mainDashboard();
+            return $this->mainDashboard($all_keys);
         } catch (DashboardException|CacheException $e) {
             return $e->getMessage();
         }

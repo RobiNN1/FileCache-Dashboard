@@ -17,46 +17,51 @@ use RobiNN\Pca\Paginator;
 use RobiNN\Pca\Value;
 
 trait FileCacheTrait {
-    private function panels(): string {
-        $project = $this->projects[$this->current_project];
-
+    /**
+     * @param array<string, string> $all_keys
+     */
+    private function panels(array $all_keys): string {
         $panels = [
             [
                 'title' => 'FileCache v'.Cache::VERSION,
                 'data'  => [
-                    'Path'  => is_dir((string) $project['path']) ? realpath((string) $project['path']) : $project['path'],
-                    'Files' => count($this->all_keys),
+                    'Path'  => $this->filecache->getPath(),
+                    'Files' => count($all_keys),
                 ],
             ],
         ];
 
-        return $this->template->render('partials/info', ['panels' => $panels, 'left' => true]);
+        return Helpers::panels($panels);
     }
 
-    private function viewKey(): string {
-        $key = Http::get('key', '');
+    /**
+     * @param array<string, string> $all_keys
+     */
+    private function viewKey(array $all_keys): string {
+        $name = Http::get('key', '');
 
-        if (!$this->filecache->exists($key)) {
+        if (!$this->filecache->exists($name)) {
             Http::redirect();
         }
 
         if (isset($_POST['delete'])) {
             if (!Csrf::validateToken(Http::post('csrf_token', ''))) {
-                Helpers::alert($this->template, 'Invalid CSRF token.', 'error');
+                Helpers::alert('Invalid CSRF token.', 'error');
             } else {
-                $this->filecache->delete($key);
+                $this->filecache->delete($name);
                 Http::redirect();
             }
         }
 
-        $value = Helpers::mixedToString($this->filecache->get($key));
+        $value = Helpers::mixedToString($this->filecache->get($name));
 
         [$formatted_value, $encode_fn, $is_formatted] = Value::format($value);
 
-        $ttl = $this->filecache->ttl($key) === 0 ? -1 : $this->filecache->ttl($key);
+        $ttl = $this->filecache->ttl($name);
+        $ttl = $ttl === 0 ? -1 : $ttl;
 
         return $this->template->render('partials/view_key', [
-            'key'       => $key,
+            'key'       => $all_keys[$name] ?? $name,
             'value'     => $formatted_value,
             'ttl'       => Format::seconds($ttl),
             'size'      => Format::bytes(strlen($value)),
@@ -66,42 +71,55 @@ trait FileCacheTrait {
     }
 
     /**
-     * @return array<int, array<string, string|int>>
+     * @param array<string, string> $all_keys Map of [file_name => original_key], actions use
+     *                                        file names so that they work even without a secret.
+     *
+     * @return array<int, array<string, array<string, int|string>|string>>
      */
-    private function getAllKeys(): array {
-        static $keys = [];
+    private function getAllKeys(array $all_keys): array {
+        $keys = [];
         $search = Http::get('s', '');
 
         $this->template->addGlobal('search_value', $search);
 
-        foreach ($this->all_keys as $key) {
-            if (count($this->all_keys) < 1000) {
-                $ttl = $this->filecache->ttl($key);
+        // Getting a TTL requires reading the whole cache file, skip it for large caches.
+        $show_ttl = count($all_keys) < 1000;
+
+        foreach ($all_keys as $name => $key) {
+            if (stripos($key, $search) === false) {
+                continue;
+            }
+
+            $ttl = 'No info';
+
+            if ($show_ttl) {
+                $ttl = $this->filecache->ttl($name);
                 $ttl = $ttl === 0 ? 'Doesn\'t expire' : $ttl;
             }
 
-            if (stripos($key, $search) !== false) {
-                $keys[] = [
-                    'key'  => $key,
-                    'info' => [
-                        'link_title' => $key,
-                        'ttl'        => $ttl ?? 'No info',
-                    ],
-                ];
-            }
+            $keys[] = [
+                'key'  => $name,
+                'info' => [
+                    'link_title' => $key,
+                    'ttl'        => $ttl,
+                ],
+            ];
         }
 
         return $keys;
     }
 
-    private function mainDashboard(): string {
-        $keys = $this->getAllKeys();
+    /**
+     * @param array<string, string> $all_keys
+     */
+    private function mainDashboard(array $all_keys): string {
+        $keys = $this->getAllKeys($all_keys);
 
-        $paginator = new Paginator($this->template, $keys);
+        $paginator = new Paginator($keys);
 
         return $this->template->render('@filecache/filecache', [
             'keys'      => $paginator->getPaginated(),
-            'all_keys'  => count($this->all_keys),
+            'all_keys'  => count($all_keys),
             'paginator' => $paginator->render(),
             'view_key'  => Http::queryString([], ['view' => 'key', 'key' => '__key__']),
         ]);
